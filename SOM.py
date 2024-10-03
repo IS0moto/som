@@ -29,6 +29,7 @@ class SOM():
         self.width = resolution
         self.depth = resolution
         self.resolution = resolution
+        self.initalize = initalize
         if initalize == "pca":
             pass
             # self.pcaInitialize()
@@ -40,6 +41,10 @@ class SOM():
         self.init_radius = resolution / 2
         # 学習半径係数
         self.radius_decay = 0.5
+        # 初期学習率（self.timalize_flag がTrueのときのみ使用）
+        self.init_learnrate = 0.5
+        # 学習率係数
+        self.learn_decay = 0.01
 
     def getSizeSOM(self):
         return(self.width, self.depth, self.height)
@@ -117,29 +122,45 @@ class SOM():
         gauss = np.exp(-0.5*(d_d ** 2 + d_w ** 2) / (self.radius_rate ** 2))
         return gauss
     
-    def overWriteNode(self, input_data: list, gauss: list):
-        """SOMの更新
+    def overWriteNodeBatch(self, input_data: list, gauss: list):
+        """SOMの更新(バッチ学習)
 
         Args:
             input_data (list): 観測データ (batch, input_dim)
             gauss (list): 勝者ノードを中心としたガウシアン (batch, x, y)
         """
-        _s = self.getSOM()
         _g = gauss.reshape(gauss.shape[0], -1)
         _sum_g = np.sum(_g, axis = 0).reshape(-1, 1)        
         self.som = (np.dot(_g.T, input_data) / _sum_g ).reshape(self.resolution, self.resolution, -1)
+    
+    def overWriteNodeOnline(self, input_data: list, gauss: list, ep: int = 1):
+        """SOMの更新(オンライン学習)
+
+        Args:
+            input_data (list): 観測データ (batch, input_dim)
+            gauss (list): 勝者ノードを中心としたガウシアン (batch, x, y)
+            ep (int, optional): 更新重み率. Defaults to 1.
+        """
+
+        self.learn_rate = self.init_learnrate*np.exp(-ep * self.learn_decay)
+        _s = self.getSOM().reshape(self.resolution, self.resolution, -1)
+        update_matrix = input_data - _s
+        _g = gauss.reshape(self.resolution, self.resolution, -1)
+        self.som = _s + update_matrix * _g * self.learn_rate
         
-    def fit(data, iteration = 10):
+    def fitBatch(data, iteration = 10):
         """_summary_
 
         Args:
             data (_type_): _description_
             iteration (int, optional): _description_. Defaults to 10.
         """
+        if self.initalize == "pca":
+            self.pcaInitialize(data)
         for i in range(iteration):
             winner_node = self.detectWinnerNode(data)
             gauss_field = self.getGauss(winner_node, i)
-            self.overWriteNode(data, gauss_field)
+            self.overWriteNodeBatch(data, gauss_field)
             
     def save(self, file_name = "latent"):
         np.save(f'weight/{file_name}', self.som)
