@@ -148,7 +148,7 @@ class SOM():
         _g = gauss.reshape(self.resolution, self.resolution, -1)
         self.som = _s + update_matrix * _g * self.learn_rate
         
-    def fitBatch(data, iteration = 10):
+    def fitBatch(self, data, iteration = 10):
         """_summary_
 
         Args:
