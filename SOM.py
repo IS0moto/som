@@ -17,7 +17,7 @@ np.random.seed(seed=0)
 
 class SOM():
     
-    def __init__(self, resolution: int, observe_dim: int, initalize = "pca"):
+    def __init__(self, resolution: int, observe_dim: int, initialize = "pca"):
         """イニシャライズ
         Args:
             width (int): SOMの横幅
@@ -29,11 +29,11 @@ class SOM():
         self.width = resolution
         self.depth = resolution
         self.resolution = resolution
-        self.initalize = initalize
-        if initalize == "pca":
+        self.initalize = initialize
+        if initialize == "pca":
             pass
             # self.pcaInitialize()
-        elif initalize == "random":
+        elif initialize == "random":
             self.randomInitialize()
         else:
             self.zeroInitialize()
@@ -57,7 +57,7 @@ class SOM():
     def zeroInitialize(self):
         """SOMのゼロ初期化
         """
-        self.som = np.zeros((self.width, self.depth, self.height),dtype = np.float)
+        self.som = np.zeros((self.width, self.depth, self.height),dtype = np.float64)
                     
     def pcaInitialize(self ,data):
         w_axis = np.arange(self.resolution)
@@ -164,10 +164,10 @@ class SOM():
             gauss_field = self.getGauss(winner_node, i)
             self.overWriteNodeBatch(data, gauss_field)
             
-    def save(self, file_name = "latent"):
-        np.save(f'weight/{file_name}', self.som)
+    def save(self, file_name = "weight/latent"):
+        np.save(f'{file_name}', self.som)
     
-    def load(self, file_name = "latent"):
-        self.som = np.load(f'weight/{file_name}.npy')
+    def load(self, file_name = "weight/latent"):
+        self.som = np.load(f'{file_name}.npy')
     
     
