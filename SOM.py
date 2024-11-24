@@ -40,7 +40,7 @@ class SOM():
         # 初期学習半径
         self.init_radius = resolution / 2
         # 学習半径係数
-        self.radius_decay = 0.5
+        self.radius_decay = 0.2
         # 初期学習率（self.timalize_flag がTrueのときのみ使用）
         self.init_learnrate = 0.5
         # 学習率係数
@@ -67,6 +67,7 @@ class SOM():
         pca = PCA(n_components = 2)
         pca.fit(data)
         self.som = pca.inverse_transform(np.sqrt(pca.explained_variance_)[None, :] * zeta)
+        self.som = self.som.reshape(self.resolution, self.resolution, self.som.shape[1])
     
     def setRadiusParam(self,radius_rate: float):
         """学習半径のパラメータ設定
@@ -158,6 +159,7 @@ class SOM():
         if self.initalize == "pca":
             self.pcaInitialize(data)
         for i in range(iteration):
+            print("SOM fitting epoch: ", i)
             winner_node = self.detectWinnerNode(data)
             gauss_field = self.getGauss(winner_node, i)
             self.overWriteNodeBatch(data, gauss_field)
